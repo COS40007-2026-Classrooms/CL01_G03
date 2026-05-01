@@ -1,6 +1,6 @@
-tensorflow
-numpy
-matplotlib
+tensorflow==2.18.0
+numpy==1.26.4
+matplotlib==3.9.0
 pandas
 seaborn
 keras
