@@ -1,0 +1,14 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.env
+.venv
+venv/
+*.h5
+*.keras
+*.pkl
+*.npy
+/artifacts/models/
+/artifacts/data/
+.dvc/cache
+.dvc/tmp

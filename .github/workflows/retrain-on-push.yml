@@ -1,0 +1,19 @@
+# Placeholder - Ishank to complete
+name: Retrain on Data Push
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'data/**'
+  schedule:
+    - cron: '0 0 * * 0'   # weekly on Sunday midnight
+  workflow_dispatch:
+
+jobs:
+  retrain:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      # TODO: Ishank to add full pipeline steps here

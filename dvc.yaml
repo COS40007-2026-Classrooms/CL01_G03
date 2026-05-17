@@ -1,0 +1,34 @@
+# dvc.yaml - DVC pipeline
+# TODO: Ishank to complete
+stages:
+  preprocess:
+    cmd: python src/preprocess_new_data.py
+    deps:
+      - src/preprocess_new_data.py
+      - data/
+    outs:
+      - artifacts/data/
+
+  train:
+    cmd: python src/model.py
+    deps:
+      - src/model.py
+      - artifacts/data/
+    outs:
+      - artifacts/models/
+
+  evaluate:
+    cmd: python src/evaluate.py
+    deps:
+      - src/evaluate.py
+      - artifacts/models/
+    outs:
+      - artifacts/metrics/
+
+  monitor:
+    cmd: python src/monitor.py
+    deps:
+      - src/monitor.py
+      - artifacts/metrics/
+    outs:
+      - reports/
