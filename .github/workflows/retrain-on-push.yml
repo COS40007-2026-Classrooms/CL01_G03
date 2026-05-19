@@ -1,4 +1,3 @@
-# Placeholder - Ishank to complete
 name: Retrain on Data Push
 
 on:
@@ -7,13 +6,67 @@ on:
     paths:
       - 'data/**'
   schedule:
-    - cron: '0 0 * * 0'   # weekly on Sunday midnight
+    - cron: '0 0 * * 0'
   workflow_dispatch:
 
 jobs:
   retrain:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      # TODO: Ishank to add full pipeline steps here
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Cache pip dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Install DVC
+        run: pip install dvc dvc-http
+
+      - name: Configure DVC remote
+        env:
+          DAGSHUB_TOKEN: ${{ secrets.DAGSHUB_TOKEN }}
+        run: |
+          dvc remote add -d origin https://dagshub.com/malhotra-ishank/CL01_G03.dvc
+          dvc remote modify origin auth basic
+          dvc remote modify origin user malhotra-ishank
+          dvc remote modify origin password $DAGSHUB_TOKEN
+
+      - name: Pull data from DVC remote
+        run: dvc pull
+
+      - name: Preprocess data
+        run: python src/preprocess_new_data.py
+
+      - name: Train model
+        run: python src/model.py
+
+      - name: Evaluate model
+        run: python src/evaluate.py
+
+      - name: Monitor and detect drift
+        run: python src/monitor.py
+
+      - name: Push artifacts to DVC remote
+        run: dvc push
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: pipeline-artifacts
+          path: |
+            artifacts/metrics/
+            reports/
