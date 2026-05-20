@@ -40,7 +40,7 @@ jobs:
         env:
           DAGSHUB_TOKEN: ${{ secrets.DAGSHUB_TOKEN }}
         run: |
-          dvc remote add -d origin https://dagshub.com/malhotra-ishank/CL01_G03.dvc
+          dvc remote add -d -f origin https://dagshub.com/malhotra-ishank/CL01_G03.dvc
           dvc remote modify origin auth basic
           dvc remote modify origin user malhotra-ishank
           dvc remote modify origin password $DAGSHUB_TOKEN
