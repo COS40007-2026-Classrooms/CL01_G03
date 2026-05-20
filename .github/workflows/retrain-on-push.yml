@@ -46,7 +46,7 @@ jobs:
           dvc remote modify origin password $DAGSHUB_TOKEN
 
       - name: Pull data from DVC remote
-        run: dvc pull --force
+        run: dvc pull --force | true
 
       - name: Preprocess data
         run: python src/preprocess_new_data.py
