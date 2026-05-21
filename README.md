@@ -7,14 +7,14 @@
 Automated ML retraining pipeline with drift detection and monitoring using GitHub Actions and DVC.
 
 ## Structure
-- `.github/workflows/` — GitHub Actions workflow
-- `src/` — Training, evaluation, monitoring scripts
-- `data/` — New data uploads (triggers retraining)
-- `train/` / `test/` — Training and test datasets
-- `artifacts/` — Model, scaler, metrics storage
-- `monitoring/` — Drift reports and logs
-- `reports/` — Performance reports
-- `dvc.yaml` — DVC pipeline definition
+- `.github/workflows/` - GitHub Actions workflow
+- `src/` - Training, evaluation, monitoring scripts
+- `data/` - New data uploads (triggers retraining)
+- `train/` / `test/` - Training and test datasets
+- `artifacts/` - Model, scaler, metrics storage
+- `monitoring/` - Drift reports and logs
+- `reports/` - Performance reports
+- `dvc.yaml` - DVC pipeline definition
 
 ## How to trigger retraining
 1. Add new data to `data/new_data.csv`

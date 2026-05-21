@@ -1,5 +1,4 @@
 # dvc.yaml - DVC pipeline
-# TODO: Ishank to complete
 stages:
   preprocess:
     cmd: python src/preprocess_new_data.py
