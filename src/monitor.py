@@ -217,7 +217,7 @@ def write_alert(alert_type, message):
 
 # ── Dashboard HTML ────────────────────────────────────────────────────────────
 
-def write_dashboard(perf, data_drift, concept_drift):
+def write_dashboard(perf, data_drift, concept_drift, rf_metrics=None):
     def badge(ok, yes="OK", no="WARNING"):
         color = "#28a745" if ok else "#ffc107"
         label = yes if ok else no
@@ -235,6 +235,21 @@ def write_dashboard(perf, data_drift, concept_drift):
     )
 
     drifted_list = ", ".join(data_drift["drifted_features"]) or "None"
+
+    if rf_metrics:
+        rf_acc = rf_metrics.get("accuracy", 0)
+        rf_f1  = rf_metrics.get("macro_f1", 0)
+        comparison_table = f"""
+<h2>Model Comparison</h2>
+<table>
+  <tr><th>Model</th><th>Accuracy</th><th>Macro F1</th><th>Role</th></tr>
+  <tr><td>Neural Network (monitored)</td><td>{perf['accuracy']:.4f}</td><td>{perf['macro_f1']:.4f}</td><td>Production</td></tr>
+  <tr><td><b>Random Forest (baseline)</b></td><td><b>{rf_acc:.4f}</b></td><td><b>{rf_f1:.4f}</b></td><td>Best model</td></tr>
+</table>
+<p><i>Monitoring tracks the Neural Network in production. Random Forest scores from training evaluation.</i></p>
+"""
+    else:
+        comparison_table = ""
 
     html = f"""<!DOCTYPE html>
 <html><head><meta charset='utf-8'>
@@ -254,6 +269,8 @@ def write_dashboard(perf, data_drift, concept_drift):
 <h1>Monitoring Dashboard</h1>
 <p><b>Generated:</b> {datetime.now().isoformat()}</p>
 <p><b>Group:</b> CL01_G03 | UCI Obesity Classification</p>
+
+{comparison_table}
 
 <h2>Performance Summary</h2>
 <div>
@@ -308,10 +325,12 @@ def run():
 
     eval_path = os.path.join(METRICS_DIR, "evaluation_metrics.json")
     baseline_f1 = 0.80
+    rf_metrics  = None
     if os.path.exists(eval_path):
         with open(eval_path) as f:
             eval_metrics = json.load(f)
         baseline_f1 = eval_metrics.get("macro_f1", 0.80)
+        rf_metrics  = eval_metrics.get("random_forest")
         log.info("Loaded baseline F1 from evaluation: %.4f", baseline_f1)
 
     perf          = monitor_performance(model, X_test, y_test, encoder)
@@ -354,7 +373,7 @@ def run():
             "timestamp":     datetime.now().isoformat(),
         }, f, indent=2, cls=NumpyEncoder)
 
-    write_dashboard(perf, data_drift, concept_drift)
+    write_dashboard(perf, data_drift, concept_drift, rf_metrics)
 
     log.info("=" * 60)
     log.info("MONITORING COMPLETE")
