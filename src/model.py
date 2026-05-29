@@ -1,14 +1,19 @@
 """
 model.py - Training script for UCI Obesity Classification
-MLOps Lead: Rafiujjaman Ratul (103484584)
+MLOps Lead: Rafiujjaman Ratul (103484584) (Neural Network)
+Ishank Malhotra (104210599) (Random Forest)
+
 """
 
 import os
 import json
 import logging
+import pickle
 import numpy as np
 import tensorflow as tf
 from datetime import datetime
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score, f1_score
 
 # ── Logging ──────────────────────────────────────────────────────────────────
 os.makedirs("logs", exist_ok=True)
@@ -23,10 +28,11 @@ logging.basicConfig(
 log = logging.getLogger(__name__)
 
 # ── Paths ─────────────────────────────────────────────────────────────────────
-ARTIFACTS   = "artifacts"
-MODEL_PATH  = os.path.join(ARTIFACTS, "models", "model.keras")
+ARTIFACTS    = "artifacts"
+MODEL_PATH   = os.path.join(ARTIFACTS, "models", "model.keras")
+RF_PATH      = os.path.join(ARTIFACTS, "models", "rf_model.pkl")
 HISTORY_PATH = os.path.join(ARTIFACTS, "metrics", "training_history.json")
-META_DIR    = os.path.join(ARTIFACTS, "metadata")
+META_DIR     = os.path.join(ARTIFACTS, "metadata")
 
 for d in [
     os.path.join(ARTIFACTS, "models"),
@@ -73,6 +79,28 @@ def build_model(input_dim: int, num_classes: int) -> tf.keras.Model:
     return model
 
 
+def train_random_forest(X_train, y_train, X_test, y_test):
+    """Train Random Forest baseline model."""
+    log.info("=" * 60)
+    log.info("TRAINING RANDOM FOREST (baseline)")
+    log.info("=" * 60)
+
+    rf = RandomForestClassifier(n_estimators=100, random_state=42, n_jobs=-1)
+    rf.fit(X_train, y_train)
+
+    y_pred = rf.predict(X_test)
+    acc = accuracy_score(y_test, y_pred)
+    f1  = f1_score(y_test, y_pred, average="weighted")
+
+    log.info("Random Forest -> Accuracy: %.4f  |  F1: %.4f", acc, f1)
+
+    with open(RF_PATH, "wb") as f:
+        pickle.dump(rf, f)
+    log.info("Random Forest saved -> %s", RF_PATH)
+
+    return acc, f1
+
+
 def train():
     log.info("=" * 60)
     log.info("STARTING MODEL TRAINING")
@@ -84,6 +112,10 @@ def train():
     input_dim   = X_train.shape[1]
     log.info("Classes: %d  Features: %d", num_classes, input_dim)
 
+    # ── Random Forest (baseline) ──────────────────────────────────────────────
+    rf_acc, rf_f1 = train_random_forest(X_train, y_train, X_test, y_test)
+
+    # ── Neural Network (primary) ──────────────────────────────────────────────
     model = build_model(input_dim, num_classes)
     model.summary(print_fn=log.info)
 
@@ -130,6 +162,13 @@ def train():
     loss, acc = model.evaluate(X_test, y_test, verbose=0)
     log.info("=" * 60)
     log.info("TEST  ->  Loss: %.4f  |  Accuracy: %.4f", loss, acc)
+    log.info("=" * 60)
+
+    # ── Model comparison ──────────────────────────────────────────────────────
+    log.info("MODEL COMPARISON")
+    log.info("Random Forest  -> Accuracy: %.4f  |  F1: %.4f", rf_acc, rf_f1)
+    log.info("Neural Network -> Accuracy: %.4f", acc)
+    log.info("Best model: %s", "Neural Network" if acc >= rf_acc else "Random Forest")
     log.info("=" * 60)
     log.info("TRAINING COMPLETE")
 
