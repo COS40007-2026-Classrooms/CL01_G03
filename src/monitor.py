@@ -255,6 +255,14 @@ def write_dashboard(perf, data_drift, concept_drift):
 <p><b>Generated:</b> {datetime.now().isoformat()}</p>
 <p><b>Group:</b> CL01_G03 | UCI Obesity Classification</p>
 
+<h2>Model Comparison</h2>
+<table>
+  <tr><th>Model</th><th>Accuracy</th><th>Macro F1</th><th>Role</th></tr>
+  <tr><td>Neural Network (monitored)</td><td>{perf['accuracy']:.4f}</td><td>{perf['macro_f1']:.4f}</td><td>Production</td></tr>
+  <tr><td><b>Random Forest (baseline)</b></td><td><b>0.9835</b></td><td><b>0.9829</b></td><td>Best model</td></tr>
+</table>
+<p><i>Monitoring tracks the Neural Network in production. Random Forest scores from training evaluation.</i></p>
+
 <h2>Performance Summary</h2>
 <div>
   <div class='metric'><b>{perf['accuracy']:.4f}</b>Accuracy</div>
